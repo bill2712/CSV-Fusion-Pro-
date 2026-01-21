@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV Fusion Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Inter', 'sans-serif'] },
+            colors: {
+              primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
+            }
+          }
+        }
+      }
+    </script>
+
+    <script type="importmap">
+{
+  "imports": {
+    "lucide": "https://esm.sh/lucide@0.469.0",
+    "@google/genai": "https://esm.sh/@google/genai@1.34.0",
+    "papaparse": "https://esm.sh/papaparse@5.5.3",
+    "uuid": "https://esm.sh/uuid@11.0.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "clsx": "https://esm.sh/clsx@^2.1.1",
+    "tailwind-merge": "https://esm.sh/tailwind-merge@^3.4.0"
+  }
+}
+</script>
+    <script type="module" crossorigin src="/CSV-Fusion-Pro-/assets/index-Wju7spa7.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased min-h-screen pb-20">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                    <i data-lucide="merge" class="w-5 h-5"></i>
+                </div>
+                <h1 class="text-xl font-bold text-slate-800">CSV Fusion Pro</h1>
+            </div>
+            <div class="text-sm text-slate-500 font-medium hidden sm:block">Vanilla Edition</div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-10 space-y-8">
+        <!-- Hero -->
+        <div class="text-center space-y-4 max-w-2xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-900">Merge CSVs instantly.</h2>
+            <p class="text-lg text-slate-600">Combine datasets. Keep the first header. Secure & Client-side.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Uploader & List -->
+            <div class="lg:col-span-7 space-y-6">
+                <!-- Drop Zone -->
+                <div id="drop-zone" class="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-xl bg-white hover:bg-slate-50 hover:border-primary-400 transition-all cursor-pointer group">
+                    <input type="file" id="file-input" multiple accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="pointer-events-none flex flex-col items-center space-y-4 p-6">
+                        <div class="p-4 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                            <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+                        </div>
+                        <div class="text-center space-y-1">
+                            <p class="text-lg font-semibold text-slate-700">Drop CSV files here</p>
+                            <p class="text-sm text-slate-500">or click to browse</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File List -->
+                <div id="file-list-container" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-medium text-slate-700 flex items-center">
+                            <i data-lucide="file-text" class="w-4 h-4 mr-2 text-primary-500"></i>
+                            Staged Files (<span id="file-count">0</span>)
+                        </h3>
+                        <button id="clear-btn" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear All</button>
+                    </div>
+                    <ul id="file-list" class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
+                        <!-- Items injected here -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- Merge Card -->
+                <div class="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Actions</h3>
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-4">
+                        <p class="text-xs text-blue-800">
+                            <strong>Note:</strong> Header from the first file is kept. Others are removed.
+                        </p>
+                    </div>
+                    <button id="merge-btn" disabled class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium shadow-sm flex items-center justify-center transition-all">
+                        <i data-lucide="merge" class="w-4 h-4 mr-2"></i>
+                        Merge Files
+                    </button>
+                    <div id="error-msg" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-start">
+                        <i data-lucide="alert-circle" class="w-4 h-4 mr-2 mt-0.5"></i>
+                        <span id="error-text"></span>
+                    </div>
+                </div>
+
+                <!-- Result Card -->
+                <div id="result-card" class="hidden bg-white rounded-xl shadow-lg border border-emerald-100 p-6">
+                    <div class="flex items-center text-emerald-600 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-3">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        </div>
+                        <span class="font-semibold">Merge Complete!</span>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-sm mb-4 space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Total Rows</span>
+                            <span id="result-rows" class="font-mono font-medium">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Filename</span>
+                            <span id="result-filename" class="font-mono font-medium truncate max-w-[150px]">-</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button id="download-btn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium flex items-center justify-center">
+                            <i data-lucide="download" class="w-4 h-4 mr-2"></i> Download CSV
+                        </button>
+                        
+                        <div class="relative py-2">
+                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+                            <div class="relative flex justify-center"><span class="bg-white px-2 text-xs text-slate-400 uppercase">AI Features</span></div>
+                        </div>
+
+                        <button id="summarize-btn" class="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium flex items-center justify-center">
+                            <i data-lucide="bot" class="w-4 h-4 mr-2 text-purple-500"></i> Summarize with Gemini
+                        </button>
+                    </div>
+
+                    <!-- AI Result -->
+                    <div id="ai-result" class="hidden mt-4 bg-purple-50 rounded-lg p-4 border border-purple-100 text-sm space-y-2">
+                        <div class="font-semibold text-purple-900 flex items-center">
+                            <i data-lucide="sparkles" class="w-3 h-3 mr-2"></i> Insight
+                        </div>
+                        <p id="ai-summary-text" class="text-purple-800 leading-relaxed"></p>
+                        <div id="ai-keywords" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+  </body>
+</html>
