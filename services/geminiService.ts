@@ -4,9 +4,10 @@ import { AISummary } from '../types';
 const getGeminiClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("API_KEY is not defined in the environment.");
+    // In a real app we might handle this gracefully in UI
+    console.warn("API_KEY is not defined.");
   }
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenAI({ apiKey: apiKey || 'dummy' });
 };
 
 export const summarizeCSV = async (csvHead: string): Promise<AISummary> => {
@@ -14,7 +15,7 @@ export const summarizeCSV = async (csvHead: string): Promise<AISummary> => {
     const ai = getGeminiClient();
     
     // Using flash-preview for speed and efficiency on text tasks
-    const modelId = 'gemini-3-flash-preview'; 
+    const modelId = 'gemini-2.0-flash-exp'; 
 
     const prompt = `
       Analyze the following CSV data snippet (first 20-50 rows). 
